@@ -78,6 +78,7 @@
       border-right: 2px solid rgb(60, 60, 60);
       background-color: rgb(65, 65, 65);
       width: 40px;
+      min-width: 40px;
     }
     .add_button:hover {
       background-color: rgb(70, 65, 35);
@@ -179,7 +180,9 @@
             let tier_data_saves = tier_saves[i].split("|");
             let new_tier = add_new_tier(tier_data_saves[0], tier_data_saves[1], tier_data_saves[2]);
             for (let j = 3; j < tier_data_saves.length; j++) {
-              add_image(new_tier.lastChild, tier_data_saves[j]);
+              setTimeout(() => {
+                add_image(new_tier.lastChild, tier_data_saves[j]);
+              }, 100*(j-3)); // rate limit, yay!
             }
           }
         });
