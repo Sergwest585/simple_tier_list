@@ -104,7 +104,6 @@
       load
     </div>
   </div>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script>
     var main_table = document.getElementById("main_table");
     const start_elements_strings = ["S", "A", "B", "C", "D", "F"];
@@ -187,18 +186,46 @@
         reader.readAsText(file);
       });
     }
+
+    async function takeScreenshot() {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        preferCurrentTab: true,
+        video: true,
+        audio: false,
+        systemAudio: "exclude",
+        windowAudio: "exclude",
+        selfBrowserSurface: "include",
+        monitorTypeSurfaces: "exclude",
+      });
+      const vid = document.createElement('video');
+
+      vid.addEventListener("loadedmetadata", () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = vid.videoWidth;
+        canvas.height = vid.videoHeight;
+        canvas.getContext('2d').drawImage(vid, 0,0);
+
+        stream.getTracks().forEach(t=>t.stop());
+
+        download_file(canvas.toDataURL("immage/png"), "tierlist.png")
+      });
+
+      vid.srcObject = stream;
+      vid.play();
+    }
+
     
     function save_as_image() {
-      let btns = document.getElementsByTagName('button');
+      alert("Not implemented... use screenshot :(");
+      alert("I hate browser security");
+      return;
+      let btns = document.getElementsByClassName('add_button');
       for (const btn of btns) {
         btn.style.display = 'none'
       }
-      html2canvas(main_table).then(canvas => {
-        let dataURL = canvas.toDataURL();
-        download_file(dataURL, 'tierlist.png');
-      });
+      takeScreenshot();
       for (const btn of btns) {
-        btn.style.display = 'block'
+        btn.style.display = 'flex'
       };
     }
 
@@ -269,6 +296,7 @@
     
     function add_image(element_to, data) {
       let new_image = new Image();
+      // new_image.crossOrigin = "anonymous" // I HATE CORS!!!
       new_image.src = data;
       new_image.draggable=true;
       new_image.style.height = 100+"px";
