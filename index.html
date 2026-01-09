@@ -215,7 +215,7 @@
   
     function dragstartHandler(ev) {
       ev.target.id = "_now_draged";
-      ev.dataTransfer.setData("application/my-app", ev.target.id);
+      ev.dataTransfer.setData("sergwest_tier_list/image_id", ev.target.id);
       ev.dataTransfer.effectAllowed = "move";
     }
     function dragoverHandler(ev) {
@@ -224,17 +224,37 @@
     }
     function dropHandler(ev) {
       ev.preventDefault();
-      const element_droped = document.getElementById(ev.dataTransfer.getData("application/my-app"));
-      if (ev.target.tagName == "DIV") {
-        ev.target.appendChild(element_droped);
-      } else {
-        ev.target.insertAdjacentElement("beforebegin", element_droped);
+
+      const items = ev.dataTransfer.items;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+          const reader = new FileReader();
+          if (ev.target.tagName == "DIV") {
+            reader.onloadend = () => {
+              add_image(ev.target, reader.result);
+            };
+          } else {
+            reader.onloadend = () => {
+              add_image(ev.target.parentNode, reader.result);
+            };
+          }
+          reader.readAsDataURL(items[i].getAsFile());
+        } else if (items[i].kind === 'string' && items[i].type === 'sergwest_tier_list/image_id') {
+          const id = ev.dataTransfer.getData("sergwest_tier_list/image_id");
+          const element_droped = document.getElementById(id);
+          if (ev.target.tagName == "DIV") {
+            ev.target.appendChild(element_droped);
+          } else {
+            ev.target.insertAdjacentElement("beforebegin", element_droped);
+          }
+          element_droped.id = ""
+        }
       }
-      element_droped.id = ""
     }
     function trashHandler(ev) {
       ev.preventDefault();
-      const element_droped = document.getElementById(ev.dataTransfer.getData("application/my-app"));
+      const element_droped = document.getElementById(ev.dataTransfer.getData("sergwest_tier_list/image_id"));
       element_droped.remove()
     }
   
@@ -274,7 +294,7 @@
       let new_tier = document.createElement("tr");
   
       let new_tier_head = document.createElement("div");
-      new_tier_head.style.fontSize = 50+"px";
+      new_tier_head.style.fontSize = 50/(tier_text.length ** 0.4)+"px";
   
       new_tier_head.style.backgroundColor = tier_color;
       new_tier_head.style.color = tier_text_color;
@@ -373,7 +393,11 @@
 
         for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-            add_image(new_tier_body, URL.createObjectURL(items[i].getAsFile()));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              add_image(new_tier_body, reader.result);
+            };
+            reader.readAsDataURL(items[i].getAsFile());
           } else if (items[i].kind === 'string' && items[i].type === 'text/plain') {
             items[i].getAsString((s) => {
               add_image(new_tier_body, s);
